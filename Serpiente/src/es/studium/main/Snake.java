@@ -7,11 +7,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 import javax.swing.Timer;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Snake extends JPanel implements KeyListener, ActionListener
@@ -19,93 +25,102 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 	private static final long serialVersionUID = 1L;
 	private int[] serpienteXLongitud=new int[750];
 	private int[] serpienteYLongitud=new int[750];
-	
+
+	//CONECTAR CON BASE DE DATOS----------------------para utilizar por otra base de datos sustituir empresa
+	String driver = "com.mysql.jdbc.Driver";
+	String url = "jdbc:mysql://localhost:3306/snake?autoReconnect=true&useSSL=false";
+	String login = "root";
+	String password = "Studium2018;";
+	Connection connection = null;
+	Statement statement = null;
+	ResultSet rs = null;
+
 	private boolean izquierda = false;
 	private boolean derecha = false;
 	private boolean arriba = false;
 	private boolean abajo = false;
-	
+
 	private ImageIcon bocaDerecha;
 	private ImageIcon bocaIzquierda;
 	private ImageIcon bocaArriba;
 	private ImageIcon bocaAbajo;
-	
+
 	private int cuerpoSerpiente=3;
-	
+
 	private Timer tiempo;
 	private int retraso=100;
 	private ImageIcon imagenSerpiente;
-	
+
 	private int[] posicionXPunto= {25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,
-									625,650,675,700,725,750,775,800,825,850};
+			625,650,675,700,725,750,775,800,825,850};
 	private int[] posicionYPunto={75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,625};
-	
+
 	private ImageIcon imagenPunto;
-	
+
 	private Random random=new Random();
-	
+
 	private int posX=random.nextInt(34);
 	private int posY=random.nextInt(23);
-	
+
 	private int puntuacion=0;
-	
+
 	private int mover=0;
-	
+
 	private ImageIcon imagenTitulo;
 
 	public Snake() {
-		
+
 		addKeyListener(this);
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
 		tiempo = new Timer(retraso, this);
 		tiempo.start();
-		
+
 	}
 	public void paint(Graphics g) {
-		
+
 		if(mover==0) {
-			
+
 			serpienteXLongitud[2]=50;
 			serpienteXLongitud[1]=75;
 			serpienteXLongitud[0]=100;
-			
+
 			serpienteYLongitud[2]=100;
 			serpienteYLongitud[1]=100;
 			serpienteYLongitud[0]=100;
 		}
-		
+
 		//Título borde imagen
 		g.setColor(Color.white);
 		g.drawRect(24, 10, 851, 55);
-		
+
 		//dibujo imagen titulo
 		imagenTitulo=new ImageIcon("snaketitle.jpg");
 		imagenTitulo.paintIcon(this, g, 25, 11);
-		
+
 		//borde juego
 		g.setColor(Color.WHITE);
 		g.drawRect(24, 74, 851, 577);
-		
+
 		//fondo juego
 		g.setColor(Color.black);
 		g.fillRect(25, 75, 850, 575);
-		
+
 		//Puntuacion
 		g.setColor(Color.white);
 		g.setFont(new Font("arial",Font.PLAIN,14));
 		g.drawString("Puntuación: "+puntuacion,765,30);
-		
+
 		//puntos longitud de la serpiente
 		g.setColor(Color.white);
 		g.setFont(new Font("arial",Font.PLAIN,14));
 		g.drawString("Longitud: "+cuerpoSerpiente,780,50);
-		
+
 		bocaDerecha =new ImageIcon("bocaDerecha.png");
 		bocaDerecha.paintIcon(this, g, serpienteXLongitud[0], serpienteYLongitud[0]);
-		
+
 		for(int i=0;i<cuerpoSerpiente; i++) {
-			
+
 			if(i==0&&derecha) {
 				bocaDerecha =new ImageIcon("bocaDerecha.png");
 				bocaDerecha.paintIcon(this, g, serpienteXLongitud[i], serpienteYLongitud[i]);
@@ -127,37 +142,107 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 				imagenSerpiente.paintIcon(this, g, serpienteXLongitud[i], serpienteYLongitud[i]);
 			}
 		}
-		
+
 		imagenPunto=new ImageIcon("punto.png");
-		
+
 		if((posicionXPunto[posX]==serpienteXLongitud[0]&&posicionYPunto[posY]==serpienteYLongitud[0])) {
 			puntuacion+=25;
 			cuerpoSerpiente++;
 			posX=random.nextInt(34);
 			posY=random.nextInt(23);
 		}
-		
+
 		imagenPunto.paintIcon(this, g, posicionXPunto[posX], posicionYPunto[posY]);
-		
+
 		for(int b=1;b<cuerpoSerpiente;b++) {
 			if(serpienteXLongitud[b]==serpienteXLongitud[0] && serpienteYLongitud[b]==serpienteYLongitud[0]) {
 				derecha=false;
 				izquierda=false;
 				arriba=false;
 				abajo=false;
-				
+
 				g.setColor(Color.white);
 				g.setFont(new Font("arial", Font.BOLD,50));
 				g.drawString("Game Over", 300, 300);
-				
+
 				g.setFont(new Font("arial", Font.BOLD,20));
 				g.drawString("Espacio para reiniciar", 335, 340);
+				//ESTABLECER CONEXION CON BASE DE DATOS
+				try
+				{
+					connection = DriverManager.getConnection(url, login, password);
+				}
+				catch(SQLException arg0)
+				{
+					System.out.println("Se produjo un error al conectar a la Base de Datos");
+				}
+				//PREPARAR EL STATEMENT
+				try
+				{
+					statement=connection.createStatement();
+					rs=statement.executeQuery("SELECT * FROM puntos;");
+					
+				}
+				catch(SQLException arg0)
+				{
+					System.out.println("Error en la sentencia SQL 1");
+				}
+				String cadena= ("INSERT INTO puntos (nombre, puntos) VALUES ('"+Inicio.nombre+"',"+puntuacion+");");
+				
+				//CARGAR EL DRIVER
+				try
+				{
+					Class.forName(driver);
+				}
+				catch(ClassNotFoundException arg0)
+				{
+					System.out.println("Se ha producido un error al cargar el Driver");
+				}
+				//PREPARAR EL STATEMENT
+				try
+				{
+					statement=connection.createStatement();
+					statement.executeUpdate(cadena);
+					if (rs.next())
+					{
+						System.out.println("Puntos Correctos");
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Error: Datos no validos ","Alta Incorrecta",JOptionPane.WARNING_MESSAGE);
+						System.out.println("Puntos Incorrectos");
+					}
+				}
+				catch(SQLException arg0)
+				{
+					System.out.println("Error en la sentencia SQL 2");
+				}
+				try
+				{
+					String cadena1="SELECT * FROM puntos order by puntos DESC LIMIT 10;";
+					
+					statement=connection.createStatement();
+					rs= statement.executeQuery(cadena1);
+					
+					InicioTop10.lista.removeAll();
+
+					while (rs.next()) {
+						
+						InicioTop10.lista.add(rs.getString("nombre")+" "+rs.getString("puntos")+"  Puntos");
+						}
+					
+					System.out.println("Consulta Correcta");
+				}
+				catch(SQLException arg0)
+				{
+					System.out.println("Error en la sentencia SQL 3");
+				}
 			}
 		}
-		
+
 		g.dispose();
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent arg0)
 	{
@@ -226,7 +311,7 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			}
 			repaint();
 		}
-		
+
 	}
 	@Override
 	public void keyPressed(KeyEvent e)
@@ -238,7 +323,7 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			repaint();
 		}
 		if(e.getKeyCode()==KeyEvent.VK_RIGHT) {
-			
+
 			mover++;
 			derecha=true;
 			if(!izquierda) {
@@ -251,7 +336,7 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			abajo=false;
 		}
 		if(e.getKeyCode()==KeyEvent.VK_LEFT) {
-			
+
 			mover++;
 			izquierda=true;
 			if(!derecha) {
@@ -264,7 +349,7 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			abajo=false;
 		}
 		if(e.getKeyCode()==KeyEvent.VK_UP) {
-			
+
 			mover++;
 			arriba=true;
 			if(!abajo) {
@@ -277,7 +362,7 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			derecha=false;
 		}
 		if(e.getKeyCode()==KeyEvent.VK_DOWN) {
-			
+
 			mover++;
 			abajo=true;
 			if(!arriba) {
@@ -289,19 +374,19 @@ public class Snake extends JPanel implements KeyListener, ActionListener
 			izquierda=false;
 			derecha=false;
 		}
-		
+
 	}
 	@Override
 	public void keyReleased(KeyEvent arg0)
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void keyTyped(KeyEvent arg0)
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 }

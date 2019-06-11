@@ -40,6 +40,8 @@ public class Inicio extends JFrame implements WindowListener, ActionListener
 	JPanel pnlSup =new JPanel();
 	JPanel pnlInf =new JPanel();
 	
+	static String nombre="";
+	
 	public Inicio() {
 		setTitle ("Snake" );
 		
@@ -85,7 +87,7 @@ public class Inicio extends JFrame implements WindowListener, ActionListener
 				Object a;
 				a=e.getSource();
 				if(a.equals(btnNuevaPart)) {
-					String nombre =txtNombre.getText();
+					nombre =txtNombre.getText();
 					if (nombre.equals("")) {
 						inicionombreerror.setVisible(true);
 					}else {
