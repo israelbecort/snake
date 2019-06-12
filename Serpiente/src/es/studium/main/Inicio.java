@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,7 +22,6 @@ public class Inicio extends JFrame implements WindowListener, ActionListener
 {
 	private static final long serialVersionUID = 1L;
 	
-	VerAyuda verayuda=new VerAyuda();
 	InicioNombreError inicionombreerror=new InicioNombreError();
 	InicioTop10 iniciotop10=new InicioTop10();
 	
@@ -143,7 +143,11 @@ public class Inicio extends JFrame implements WindowListener, ActionListener
 		a=arg0.getSource();
 		if(a.equals(mniAyudaVerAyuda))
 		{
-			verayuda.setVisible(true);
+			try {
+				Runtime.getRuntime().exec("hh.exe ayuda/help.chm");
+			}catch (IOException e) {
+				e.printStackTrace();
+				}
 		}
 		
 	}
