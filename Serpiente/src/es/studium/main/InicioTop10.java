@@ -24,7 +24,7 @@ public class InicioTop10 extends JFrame implements WindowListener, ActionListene
 	static List lista=new List(6, false);
 	JButton btnAceptar=new JButton ("Aceptar");
 
-	//CONECTAR CON BASE DE DATOS----------------------para utilizar por otra base de datos sustituir empresa
+	//CONECTAR CON BASE DE DATOS
 	String driver = "com.mysql.jdbc.Driver";
 	String url = "jdbc:mysql://localhost:3306/snake?autoReconnect=true&useSSL=false";
 	String login = "root";
